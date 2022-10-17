@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ishop-1</title>
+</head>
+<body>
+<div id="container"></div>
+
+<script src="https://unpkg.com/react@15/dist/react.js"></script>
+<script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
+
+<script src="ProductsTable.js"></script>
+<script src="ProductsBody.js"></script>
+<script src="ProductsHead.js"></script>
+<link rel="stylesheet" type="text/css" href="ProductsTable.css" />
+
+<script>
+
+    var columnsArr = ['Product Image', 'Product Name', 'Quantity', 'Price, $'];
+    var productsArr = [
+       {name: 'Reversed mid-heel sock boots in black', code: 1, price: 40.00, qty: 12, url: 'images/202249004-1-black.webp'},
+       {name: 'Wide Fit Alfie chunky chelsea boots in off-white', code: 2, price: 43.00, qty: 2, url: 'images/202220642-1-offwhite.webp'},
+       {name: 'Neva barely there heeled sandals in gold', code: 3, price: 20.00, qty: 22, url: 'images/201072153-1-gold.webp'},
+       {name: 'Remmy set-back heeled boots in black', code: 4, price: 40.00, qty: 5, url: 'images/202265927-1-black.webp'},
+       {name: 'Arabelle chain trim hiker boots in black', code: 5, price: 15.00, qty: 3, url: 'images/23691735-1-black.webp'},
+       {name: 'Wide Fit Hilton barely there block heeled sandals in beige', code: 6, price: 28.00, qty: 4, url: 'images/201069458-1-beigepatent.webp'},
+       {name: 'Chaos chunky platform knee boots in black', code: 7, price: 56.00, qty: 3, url: 'images/202266796-1-black.webp'},
+       {name: 'Ember high heeled sock boots in off white patent', code: 8, price: 40.00, qty: 6, url: 'images/202926942-1-offwhitepatent.webp'},
+       {name: 'Foxhill faux pearl jelly sandals in beige', code: 9, price: 14.00, qty: 1, url: 'images/201126517-1-pearlbeige.webp'},
+       {name: 'Emotive high-heeled platform ankle boots in black', code: 10, price: 50.00, qty: 7, url: 'images/200791143-1-black.webp'}
+    ];
+
+    ReactDOM.render(
+        React.createElement(ProductsTable, {columns: columnsArr, products: productsArr}),
+        document.getElementById('container')
+    );
+
+</script>
+
+</body>
+</html>

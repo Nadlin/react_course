@@ -1,0 +1,23 @@
+.ProductsTable .image {
+    max-width: 100px;
+}
+
+.ProductsTable {
+    border-collapse: collapse;
+}
+
+.ProductsTable,
+.ProductsTable tr,
+.ProductsTable td,
+.ProductsTable th {
+    border: 1px solid #000;
+}
+
+.ProductsTable td,
+.ProductsTable th {
+    padding: 10px;
+}
+
+.ProductsTable th {
+    text-align: center;
+}
