@@ -1,5 +1,6 @@
 ﻿var ProductsTable = React.createClass({
-    displayName: 'ProductsBlock',
+
+    displayName: 'ProductsTable',
 
     propTypes: {
         shopName: React.PropTypes.string.isRequired,

@@ -1,7 +1,6 @@
 ﻿var ProductsBody = React.createClass({
 
-    displayName: 'ProductsBlock',
-
+    displayName: 'ProductsBody',
 
     propTypes: {
         products: React.PropTypes.arrayOf(
