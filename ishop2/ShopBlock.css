@@ -1,0 +1,29 @@
+.ShopBlock .image {
+    max-width: 100px;
+}
+
+.ShopBlock {
+    border-collapse: collapse;
+}
+
+.ShopBlock,
+.ShopBlock tr,
+.ShopBlock td,
+.ShopBlock th {
+    border: 1px solid #000;
+}
+
+.ShopBlock td,
+.ShopBlock th {
+    padding: 10px;
+}
+
+.ShopBlock caption {
+    font-size: 20px;
+    font-weight: bold;
+    color: silver;
+}
+
+.ShopBlock [data-selected="true"] td {
+    background-color: orangered;
+}
