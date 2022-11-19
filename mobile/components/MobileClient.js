@@ -9,12 +9,12 @@ class MobileClient extends React.PureComponent {
     static propTypes = {
         id: PropTypes.number.isRequired,
         client: PropTypes.shape({
+            id: PropTypes.number.isRequired,
             fam: PropTypes.string.isRequired,
             im: PropTypes.string.isRequired,
             otch: PropTypes.string.isRequired,
             balance: PropTypes.number.isRequired,
             status: PropTypes.string.isRequired
-
         }),
     };
 
