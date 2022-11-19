@@ -1,0 +1,21 @@
+.MobileClient .blocked {
+    background-color: red;
+}
+
+.MobileClient .active {
+    background-color: green;
+}
+
+.MobileClient td {
+    padding: 5px;
+}
+
+table, td, th {
+    border: 1px solid #000;
+}
+
+label {
+    width: 80px;
+    display: inline-block;
+    margin: 5px;
+}
