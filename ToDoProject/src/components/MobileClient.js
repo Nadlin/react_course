@@ -21,10 +21,11 @@ export const MobileClient = (props) => {
 
     const memoizeedRenderResult=useMemo(()=> {
         function editCl() {
-            clientEvents.emit('EClientChanged', client.id);
+            //clientEvents.emit('EClientChanged', client.id);
+            clientEvents.emit('EClientChanged', client);
         };
 
-        function deleteCl() {
+        function deleteCl() {  // Добавить попап/confirm на удаление
             clientEvents.emit('EClientDeleted', client.id);
         };
 

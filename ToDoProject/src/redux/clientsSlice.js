@@ -19,7 +19,7 @@ export const clientsSlice = createSlice({
     initialState,
     reducers: {
 
-        clientAdd: (state,action) => {
+        /*clientAdd: (state,action) => {
             state.push(action.payload);
 
         },
@@ -32,9 +32,9 @@ export const clientsSlice = createSlice({
                 }
             })
             state[ind] = action.payload;
-        },
+        },*/
 
-        clientDelete: (state,action) => {
+        /*clientDelete: (state,action) => {
             let delClientIndex;
             for ( let i=0; state.length; i++) {
                 let client = state[i];
@@ -44,7 +44,7 @@ export const clientsSlice = createSlice({
                 }
             };
             state.splice(delClientIndex, 1);
-        },
+        },*/
 
         updateLoadState: (state,action) => {
             state.dataLoadState = action.payload.state;

@@ -19,7 +19,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 
 export const MobileCompany = () => {
@@ -41,16 +41,21 @@ export const MobileCompany = () => {
     const [isShowBlocked, setIsShowBlocked] = useState(false);
     const [isShowActive, setIsShowActive] = useState(false);
     const [isClientChanging, setIsClientChanging] = useState(false);
+    const [clientChangingId, setClientChangingId] = useState(false);
     const [isNewClientAdding, setIsNewClientAdding] = useState(false);
     const [changingClient, setChangingClient] = useState({});
     const [priority, setPriority] = useState(4);
     const [itemColor, setItemColor] = useState('green');
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
+    const [isConfirmation, setIsConfirmation] = useState(false);
 
     useEffect(
         ()=>{
-            load();
+            if (clients.dataLoadState == 0) {
+                load();
+            }
+
             clientEvents.addListener('EClientChanged', changeClient);
             clientEvents.addListener('EClientDeleted', deleteClient);
             return ()=>{
@@ -59,7 +64,7 @@ export const MobileCompany = () => {
                 clientEvents.removeListener('EClientDeleted', deleteClient);
             };
         },
-        []
+        [clients]
     );
 
     /*useEffect(
@@ -92,10 +97,10 @@ export const MobileCompany = () => {
     }
 
 
-    const newFamRef = React.createRef();
-    const newImRef = React.createRef();
-    const newOtchRef = React.createRef();
-    const newBalanceRef = React.createRef();
+    const newTaskRef = React.createRef();
+    const newNotesRef = React.createRef();
+
+
 
 
     const handleClickOpen = () => {
@@ -131,19 +136,19 @@ export const MobileCompany = () => {
     };
 
     function saveClient () { /*{id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},*/
-        let cc = {...changingClient};
-        let timeNow = new Date();
-        cc.id = timeNow.getTime();
-   //     if (newFamRef.current) {
-            let newFam=newFamRef.current.value;
-            cc.task = newFam;
+      //  let cc = {...changingClient};
+        let cc = {};
+
+   //     if (newTaskRef.current) {
+            let newTask=newTaskRef.current.value;
+            cc.task = newTask;
     //    }
-    //    if (newImRef.current) {
-            let newIm=newImRef.current.value;
-            cc.notes = newIm;
+    //    if (newNotesRef.current) {
+            let newNotes=newNotesRef.current.value;
+            cc.notes = newNotes;
    //     }
-     //   if (newOtchRef.current) {
-           // let dateTermination=newOtchRef.current.value;
+
+
         let dateTerminationValue = value;
         let termination = new Date(dateTerminationValue);
        let terminationTime = termination.getTime();
@@ -153,65 +158,110 @@ export const MobileCompany = () => {
           //  dateTermination = new Date(dateTermination);
      //   }
           //  cc.termination = dateTermination.getTime();
-    //    if (newBalanceRef.current) {
-          //  let newBalance=newBalanceRef.current.value;
-           // cc.balance = parseInt(newBalance);
+
    //     }
         cc.priority = priority;
         cc.color = itemColor;
         cc.chosen = false;
+        let clientsNew = clients.dataCurrent.slice();
         if (isNewClientAdding) {
          /*   let maxId = 1;
             clients.forEach((client, i) => {
                 maxId = (client.id > 1) ? client.id : maxId;
             })
             cc.id = maxId + 5;*/
-            handleClose();
+            let timeNow = new Date();
+            cc.id = timeNow.getTime();
             setIsNewClientAdding(false);
-            setValue(null);
+
             //dispatch(clientAdd(cc));
 
-            let clientsNew = clients.dataCurrent.slice();
+
             clientsNew.push(cc);
 
-            requestTaskUpdate(clientsNew);
 
 
 
-        } else if (isClientChanging) {
+
+        } else if (isClientChanging) {  // как в slice/... удалить, заменить, добавить элемент
+            cc.id = clientChangingId;
+            let clientIndex;
+            for (let i=0; clientsNew.length; i++) {
+                if (clientsNew[i].id == clientChangingId) {
+                    clientIndex = i;
+                    break;
+                }
+            }
+
+            clientsNew[clientIndex] = cc;
+
             setIsClientChanging(false);
-            dispatch(clientChange(cc));
+            setClientChangingId(null);
+
         }
+        setValue(null);
+        handleClose();
+        requestTaskUpdate(clientsNew);
         setChangingClient({});
     };
 
-    function changeClient (id) {/* {id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},*/
-        let client, clientCh;
-        for ( let i=0; clients.length; i++) { // ПОЧЕМУ CLIENTS null
+    function changeClient (client) {/* {id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},*/
+        //let client, clientCh;
+        /*for ( let i=0; clients.length; i++) {
             client = clients[i];
             if (client.id == id) {
                 clientCh = clients[i];
                 break;
             }
-        }
-        setChangingClient(clientCh);
+        }*/
+        setChangingClient(client); // нужен ли ChangingClient?? // нужен  надо проверить
+        let timestamp = client.termination;
+        let newDate = new Date(timestamp);
+       setValue(dayjs(newDate.getFullYear() + '-' + (newDate.getMonth()+1) + '-' + newDate.getDate()));
+       setPriority(client.priority);
+       setItemColor(client.color);
+       // setValue(dayjs(new Date(2018, 8, 18)));
+
         if (isClientChanging) {
-            newFamRef.current.value = clientCh.task;
-            newImRef.current.value = clientCh.notes;
-            newOtchRef.current.value = clientCh.otch;
-            newBalanceRef.current.value = clientCh.balance;
+            newTaskRef.current.value = client.task;
+            newNotesRef.current.value = client.notes;
+
+
 
         } else {
             setIsClientChanging(true);
+            setClientChangingId(client.id);
+
         }
+        //client. //могу ли я тут менять клиента. Это будут мутабельные изменения?
+
+        handleClickOpen();
     };
 
     function deleteClient (id) {
-        if (isClientChanging && changingClient.id == id) {
-            setIsClientChanging(false);
-            setChangingClient({});
+        setIsConfirmation(true);
+        handleClickOpen();
+       // let confirmation = window.confirm('Вы действительно хотите удалить задачу?');
+        let confirmation = false;
+        if (confirmation) {
+            if (isClientChanging && changingClient.id == id) { // условие скорее всего не надо. так как невозможно нажать на кнопку удалить при открытом попап- редактировании
+                setIsClientChanging(false);
+                setClientChangingId(null);
+                setChangingClient({});
+            }
+            // dispatch(clientDelete(id));
+            let clientsNew = clients.dataCurrent.slice(), clientIndex;
+            for (let i=0; clientsNew.length; i++) {
+                if (clientsNew[i].id == id) {
+                    clientIndex = i;
+                    break;
+                }
+            }
+            clientsNew.splice(clientIndex, 1);
+            requestTaskUpdate(clientsNew);
         }
-        dispatch(clientDelete(id));
+
+
     };
 
     async function requestTaskUpdate (clientsNew) {
@@ -293,13 +343,13 @@ export const MobileCompany = () => {
                     <DialogContent>
 
                             <div>
-                                <div class="issue">
+                                <div>
                                     <label>Задача:</label>
-                                    <textarea rows="3" cols="50" defaultValue={changingClient.task} ref={newFamRef}></textarea>
+                                    <textarea rows="3" cols="50" defaultValue={changingClient.task} ref={newTaskRef}></textarea>
                                     <div>
                                 </div>
                                     <label htmlFor="notes-edit">Примечания:</label>
-                                    <textarea rows="2" cols="50" defaultValue={changingClient.notes} ref={newImRef}></textarea>
+                                    <textarea rows="2" cols="50" defaultValue={changingClient.notes} ref={newNotesRef}></textarea>
                                 </div>
                                 <ul className="importance"><label>Приоритетность:</label>
                                     <li className={priority == 1 ? 'shadow' : ''} title="максимально срочно" data-color="red" data-priority="1" onClick={(eo)=>setNewPriority(eo)}></li>
@@ -313,8 +363,9 @@ export const MobileCompany = () => {
                                     <DatePicker
 
                                         defaultValue={changingClient.dateTermination}
-                                        inputFormat="DD/MM/YY"
+                                        inputFormat="DD/MM/YYYY"
                                         value={value}
+
                                         onChange={(newValue) => {
                                             setValue(newValue);
                                         }}
@@ -331,6 +382,15 @@ export const MobileCompany = () => {
 
                 </Dialog>
                 }
+                {
+                    isConfirmation &&
+                    <Dialog open={open} onClose={handleClose}>
+                        Вы действительно хотите сохранить задачу?
+                        <input type="button" value="СОХРАНИТЬ" onClick={saveClient} />
+                        <input type="button" value="Отмена" onClick={handleClose} />
+                    </Dialog>
+                }
+
             </div>
 
     );
