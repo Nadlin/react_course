@@ -6,17 +6,30 @@ import './MobileClient.css';
 
 export const MobileClient = (props) => {
     const [client, setClient] = useState(props.client);
+    const [markedClass, setMarkedClass] = useState(props.markedClass);
+
     useEffect(
         () => {
             if (props.client !== client) {
                 setClient(props.client);
+
                //console.log("from useEffect: MobileClient id=" + props.id);
             }
+
+            if (props.markedClass != markedClass) {
+
+                setMarkedClass(props.markedClass);
+                //console.log("from useEffect: MobileClient id=" + props.id);
+            }
+
+
+
             return () => {
                 // console.log('MobileClient размонтирован');
+
             };
         },
-        [props.client]
+        [props.client, props.markedClass]
     );
 
     const memoizeedRenderResult=useMemo(()=> {
@@ -29,30 +42,54 @@ export const MobileClient = (props) => {
             clientEvents.emit('EClientDeleted', client.id);
         };
 
+        function deleteClCompl () {
+            clientEvents.emit('EClientComplDeleted', client.id);
+
+        }
+
+        function moveToDone () {
+            clientEvents.emit('ETaskCompleted', client);
+        };
+
+
         console.log("MobileClient id=" + props.id + " render");
 
         return (
-            <div className={'MobileClient elem ' + client.color}>
+            <div className={(client.color) ? 'MobileClient elem ' +  client.color + ' ' + markedClass : 'MobileClient elem -completed' + ' ' + markedClass}>
                 <div className="head"></div>
-                <div className="action">
-                    <span className="done" title="Отметить как выполнена"></span>
-                    <span className="edit" title="Редактировать задачу" onClick={editCl}></span>
-                    <span className="exit" title="Удалить задачу" onClick={deleteCl}></span>
-                </div>
-                <div className="content">
-                    <p className="title">{client.task}</p>
-                    <p className="notes">{client.notes}</p>
-                    <p className="date">Срок: {client.dateTermination}</p>
-                </div>
+                {
+                    !props.isCompleted &&
+                    <>
+                        <div className="action">
+                            <span className="done" title="Отметить как выполнена" onClick={moveToDone}></span>
+                            <span className="edit" title="Редактировать задачу" onClick={editCl}></span>
+                            <span className="exit" title="Удалить задачу" onClick={deleteCl}></span>
+                        </div>
+                        <div className="content">
+                            <p className="title">{client.task}</p>
+                            <p className="notes">{client.notes}</p>
+                            <p className="date">Срок: {client.dateTermination}</p>
+                        </div>
+                    </>
+                }
+                {
+                    props.isCompleted &&
+                    <>
+                        <div className="action">
+                            <span className="exit" title="Удалить задачу" onClick={deleteClCompl}></span>
+                        </div>
+                        <div className="content">
+                            <p className="title">{client.task}</p>
+                            <p className="notes">{client.notes}</p>
+                            <p className="notes">{client['notes_completed']}</p>
+                            <p>Срок выполнения: {client.dateTermination}</p>
+                            <p>Дата закрытия задачи: {client.dateCompleted}</p>
+                        </div>
+                    </>
+                }
             </div>
         );
-    }, [client.task, client.notes, client.dateTermination, client.balance, client.status]);
+    }, [client.task, client.notes, client.dateTermination, client.balance, client.status, markedClass]);
 
     return memoizeedRenderResult;
 }
-/*
-{id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},
-{id:102, task:"Task 2", notes:"Notes 2", dateTermination:"8/12/2022", termination:1670360400000, priority: 3, color: 'green', chosen: false},
-{id:103, task:"Task 3", notes:"Notes 3", dateTermination:"29/12/2022", termination:1670360400000, priority: 3, color: 'red', chosen: false},
-{id:104, task:"Task 4", notes:"Notes 4", dateTermination:"13/12/2022", termination:1670360400000, priority: 3, color: 'orrange', chosen: false},
- */

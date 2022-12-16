@@ -1,8 +1,28 @@
-.PageLink {
-    color: black;
-    margin-right: 10px;
+.menu-link {
+    display: inline-block;
+    padding: 10px 40px 10px 20px;
+    color: #616060;
+    text-decoration: none;
+    font-size: 22px;
+    position: relative;
 }
 
-.ActivePageLink {
-    font-weight: bold;
+.menu-link .count {
+    color: #5cc9fb;
+    position: absolute;
+    top: 0;
+    padding-left: 3px;
 }
+
+.menu-link.-active {
+    border-bottom: 2px solid #5cc9fb;
+    color: #414342;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+header {
+    font-family: 'Caveat', cursive;
+    margin-bottom: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+

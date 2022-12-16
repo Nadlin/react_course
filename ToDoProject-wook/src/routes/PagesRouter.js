@@ -8,13 +8,17 @@ import { PageClients } from '../pages/PageClients';
 import {MobileCompany} from "../components/MobileCompany";
 import {CompletedTasks} from "../components/CompletedTasks";
 
+import {useDispatch, useSelector} from 'react-redux';
+
+
 
 export const PagesRouter = () => {
+    const clientsRedux = useSelector(state=>state.clients);
           
     return (
       <Routes>
           <Route path="/" element={<PageAbout/>} />
-          <Route path="/current" element={<MobileCompany />} />
+          <Route path="/current" element={<MobileCompany clientsCurrent={clientsRedux.dataCurrent} clientsCompleted={clientsRedux.dataCompleted}/>} />
           <Route path="/completed" element={<CompletedTasks />} />
       </Routes>
     );

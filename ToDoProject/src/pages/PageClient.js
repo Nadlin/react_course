@@ -1,7 +1,7 @@
 import React from 'react';
 import {useParams} from "react-router-dom";
 
-import { MobileClientInfo } from '../components/MobileClientInfo';
+//import { MobileClientInfo } from '../components/MobileClientInfo';
 
 import { appData } from '../appData';
 
@@ -17,7 +17,9 @@ export const PageClient = () => {
     const clientData=appData.clients.find( c => c.id===clientId );
 
     return (
-      <MobileClientInfo fio={clientData.fio} balance={clientData.balance} />
+        <div>
+            {clientData.fio + ' ' + clientData.balance}
+        </div>
     );
     
 }
