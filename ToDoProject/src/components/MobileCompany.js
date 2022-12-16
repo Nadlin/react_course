@@ -39,6 +39,9 @@ export const MobileCompany = () => {
     const [sortPriority, setSortPriority] = useState(null);
     const [searchValue, setSearchValue] = useState('');
     const [isSearch, setIsSearch] = useState(false);
+    const [isExpired, setIsExpired] = useState(false);
+    const [isSortByDate, setIsSortByDate] = useState(false);
+    const [isSortByPriority, setIsSortByPriority] = useState(false);
 
     const [clientsCurrent, setClientsCurrent] = useState(clientsRedux.clientsCurrent);
     const [clientsCompleted, setClientsCompleted] = useState(clientsRedux.clientsCompleted);
@@ -53,6 +56,32 @@ export const MobileCompany = () => {
                 setClientsCompleted(clientsRedux.dataCompleted);
             }
 
+            if (isSearch || isExpired || isSortByDate || isSortByPriority) {
+                let tasksFilteredT = clientsRedux.dataCurrent,
+                    tasksFiltered = tasksFilteredT.slice(),
+                    dateNow = new Date(),
+                    dateTime = dateNow.getTime();
+
+                if (isSearch) {
+                    tasksFiltered = tasksFiltered.filter(task => task.task.includes(searchValue) || task.notes.includes(searchValue));
+                }
+
+                if (isExpired) {
+                    tasksFiltered = tasksFiltered.filter(task => task.termination < dateTime);
+                }
+
+                if (isSortByDate) {
+                   tasksFiltered.sort(function(a, b) {
+                        return  a.termination - b.termination;
+                    });
+                }
+
+                if (isSortByPriority) {
+                    tasksFiltered = tasksFiltered.filter(task => task.priority == sortPriority);
+                }
+
+                setClientsCurrent(tasksFiltered);
+            }
             clientEvents.addListener('EClientChanged', changeClient);
             clientEvents.addListener('EClientDeleted', confirmTaskRemoval);
             clientEvents.addListener('ETaskCompleted', moveTaskToDone);
@@ -63,7 +92,7 @@ export const MobileCompany = () => {
                 clientEvents.removeListener('ETaskCompleted', moveTaskToDone);
             };
         },
-        [clientsRedux, clientsCurrent, clientsCompleted]
+        [clientsRedux, isSearch, isExpired, isSortByDate, isSortByPriority, searchValue, sortPriority]
     );
 
     const dispatch = useDispatch();
@@ -71,10 +100,10 @@ export const MobileCompany = () => {
     if (clientsCurrent) {
         clientsCode = clientsCurrent.map( (client, i) => {
             client = {...client};
-            if ((sortPriority && sortPriority == client.priority) || !sortPriority
-            || (isSearch && client.task.indexOf(searchValue) != -1)) {
-                return <MobileClient key={client.id} id={client.id} client={client} isCompleted={false} markedClass={(confirmDeletedTaskId && confirmDeletedTaskId == client.id) ? '-marked' : ''} />;
-            }
+            /*if ((sortPriority && sortPriority == client.priority) || !sortPriority
+            || (isSearch && client.task.indexOf(searchValue) != -1)) */
+            return <MobileClient key={client.id} id={client.id} client={client} isCompleted={false} markedClass={(confirmDeletedTaskId && confirmDeletedTaskId == client.id) ? '-marked' : ''} />;
+
         });
     }
     const newTaskRef = React.createRef();
@@ -97,21 +126,6 @@ export const MobileCompany = () => {
     function load () {
         dispatch(clientsLoad);
     }
-
-    function showAll () {
-        setIsShowActive(false);
-        setIsShowBlocked(false);
-    };
-
-    function showActive () {
-        setIsShowActive(true);
-        setIsShowBlocked(false);
-    };
-
-    function showBlocked () {
-        setIsShowBlocked(true);
-        setIsShowActive(false);
-    };
 
     function addClient () {
         setIsNewClientAdding(true);
@@ -303,14 +317,66 @@ export const MobileCompany = () => {
         }
     };
 
-    function setNewPrioritySort (eo) {
+    function showByDate() {
+        setIsSortByDate(true);
+       // sortTasks();
+    }
+
+    function showExpired () {
+        setIsExpired(true);
+      //  sortTasks();
+    };
+
+    function searchText (eo) {
+        setSearchValue(eo.target.value);
+
+        setIsSearch(true);
+       // sortTasks();
+
+    };
+
+    function showByPriority (eo) {
         let priority = eo.target.getAttribute('data-priority');
+        setIsSortByPriority(true);
         setSortPriority(priority);
+      //  sortTasks();
+    };
+
+
+    function showAll () {
+        setIsSortByDate(false);
+        setIsExpired(false);
+        setSearchValue('');
+        setIsSearch(false);
+        setIsSortByPriority(false);
+        setSortPriority(null);
     };
 
     function sortTasks (eo) {
-        setSearchValue(eo.target.value);
-        setIsSearch(true);
+        let tasksFiltered = clientsCurrent.slice(),
+            dateNow = new Date(),
+            dateTime = dateNow.getTime();
+
+
+
+        if (isSearch) {
+            tasksFiltered = tasksFiltered.filter(task => task.task.includes(searchValue) || task.notes.includes(searchValue));
+        }
+
+        if (isExpired) {
+            tasksFiltered = tasksFiltered.filter(task => task.termination < dateTime);
+        }
+
+        if (isSortByDate) {
+            tasksFiltered.sort((a, b) => a.termination - b.termination);
+        }
+
+        if (isSortByPriority) {
+            tasksFiltered = tasksFiltered.filter(task => task.priority == sortPriority);
+        }
+
+        setClientsCurrent(tasksFiltered);
+
     }
 
     return (
@@ -321,29 +387,29 @@ export const MobileCompany = () => {
                     <div>
                         <input className={(!isShowActive && !isShowBlocked) ? 'active' : ''} type="button" value="Все"
                                onClick={showAll}/>
-                        <input className={isShowActive ? 'active' : ''} type="button" value="Активные"
-                               onClick={showActive}/>
-                        <input className={isShowBlocked ? 'active' : ''} type="button" value="Заблокированные"
-                               onClick={showBlocked}/>
-                        <input className={isShowBlocked ? 'active' : ''} type="text" value={searchValue}
-                               onChange={(eo)=>sortTasks(eo)}/>
+                        <input className={isSortByDate ? 'active' : ''} type="button" value="По сроку выполнения"
+                               onClick={showByDate}/>
+                        <input className={isExpired ? 'active' : ''} type="button" value="Просроченные"
+                               onClick={showExpired}/>
+                        <input type="text" value={searchValue}
+                               onChange={(eo)=>searchText(eo)}/>
                         <fieldset>
                             <legend>Сортировать по приоритетности</legend>
                             <ul className="importance">
                                 <li className={sortPriority == 1 ? 'shadow' : ''} title="максимально срочно"
                                     data-color="red" data-priority="1"
-                                    onClick={(eo) => setNewPrioritySort(eo)}></li>
+                                    onClick={(eo) => showByPriority(eo)}></li>
                                 <li className={sortPriority == 2 ? 'shadow' : ''} title="срочно" data-color="orange"
-                                    data-priority="2" onClick={(eo) => setNewPrioritySort(eo)}></li>
+                                    data-priority="2" onClick={(eo) => showByPriority(eo)}></li>
                                 <li className={sortPriority == 3 ? 'shadow' : ''} title="не срочно"
                                     data-color="yellow" data-priority="3"
-                                    onClick={(eo) => setNewPrioritySort(eo)}></li>
+                                    onClick={(eo) => showByPriority(eo)}></li>
                                 <li className={sortPriority == 4 ? 'shadow' : ''} title="может подождать"
                                     data-color="green" data-priority="4"
-                                    onClick={(eo) => setNewPrioritySort(eo)}></li>
+                                    onClick={(eo) => showByPriority(eo)}></li>
                             </ul>
                         </fieldset>
-                        <input class="add-btn" type="button" value="Добавить задачу" onClick={addClient}/>
+                        <input className="add-btn" type="button" value="Добавить задачу" onClick={addClient}/>
                     </div>
 
                     <div className='MobileCompanyClients'>
