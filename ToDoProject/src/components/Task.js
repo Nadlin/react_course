@@ -38,7 +38,7 @@ export const Task = (props) => {
             taskEvents.emit('ETaskCompleted', task);
         };
 
-       // console.log("Task id=" + props.id + " render");
+        //console.log("Task id=" + props.id + " render");
 
         return (
             <div className={(task.color) ? 'elem ' +  task.color + ' ' + markedClass : 'elem -completed' + ' ' + markedClass}>

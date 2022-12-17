@@ -12,8 +12,6 @@ export const PagesLinks = () => {
         return className;
     }
 
-    console.log('render menu');
-
     return (
         <header>
             <NavLink to="/current" className={getLinkClass}>

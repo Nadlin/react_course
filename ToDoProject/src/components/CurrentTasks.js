@@ -11,7 +11,6 @@ import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -238,7 +237,6 @@ export const CurrentTasks = () => {
     }
 
     function deleteTask () {
-
         handleClickOpen();
         let tasksNew = tasksCurrent.slice(), taskIndex;
         for (let i=0; tasksNew.length; i++) {
@@ -360,30 +358,6 @@ export const CurrentTasks = () => {
         setSearchParams({});
     };
 
-    function sortTasks (eo) {
-        let tasksFiltered = tasksCurrent.slice(),
-            dateNow = new Date(),
-            dateTime = dateNow.getTime();
-
-        if (isSearch) {
-            tasksFiltered = tasksFiltered.filter(task => task.task.includes(searchValue) || task.notes.includes(searchValue));
-        }
-
-        if (isExpired) {
-            tasksFiltered = tasksFiltered.filter(task => task.termination < dateTime);
-        }
-
-        if (isSortByDate) {
-            tasksFiltered.sort((a, b) => a.termination - b.termination);
-        }
-
-        if (isSortByPriority) {
-            tasksFiltered = tasksFiltered.filter(task => task.priority == sortPriority);
-        }
-
-        setTasksCurrent(tasksFiltered);
-    }
-
     return (
         <>
             {
@@ -424,7 +398,6 @@ export const CurrentTasks = () => {
                             onClose={handleClose}>
 
                             <DialogTitle id="alert-dialog-title" onClose={handleClose}>
-                                <FontAwesomeIcon icon="fa-regular fa-xmark"/>
                                 {isNewTaskAdding ? 'Новая задача' : 'Редактирование Задачи'}
                             </DialogTitle>
                             <DialogContent>
