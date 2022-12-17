@@ -4,7 +4,6 @@ export async function tasksLoad(dispatch) {
     try {
       dispatch( updateLoadState({state:1,error:null}) );
       const stringName = 'LINNIK_TO_DO_2';
-      //const dataParams =  { f: 'READ', n: stringName };
         let sp = new URLSearchParams();
         sp.append('f', 'READ');
         sp.append('n', stringName);

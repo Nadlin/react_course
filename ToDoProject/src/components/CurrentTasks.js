@@ -5,7 +5,7 @@ import {taskEvents} from './events';
 import { Task } from './Task';
 import './CurrentTasks.css';
 import { tasksLoad } from "../redux/tasksLoad.js";
-import {updateData, updateLoadState} from "../redux/tasksSlice";
+import {updateLoadState} from "../redux/tasksSlice";
 import Dialog from '@mui/material/Dialog';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,7 +15,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import {useParams, useSearchParams, useNavigate} from "react-router-dom";
+import {useSearchParams, useNavigate} from "react-router-dom";
 
 export const CurrentTasks = () => {
     //console.log("render CurrentTasks");
