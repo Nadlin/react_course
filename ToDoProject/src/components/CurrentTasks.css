@@ -1,25 +1,8 @@
-.MobileCompany {
+.CurrentTasks {
     position: relative;
 }
 
-.MobileClient .blocked {
-    background-color: red;
-}
-
-.MobileClient .active {
-    background-color: green;
-}
-
-.MobileClient td {
-    padding: 5px;
-}
-
-table, td, th {
-    border: 1px solid #000;
-}
-
 label {
-   /* width: 80px;*/
     display: inline-block;
     margin: 5px;
 }
@@ -32,22 +15,19 @@ input[type='button'] {
     margin: 5px;
 }
 
-
-
 .elem {
-    width: 300px; /* 350 */
-    min-height: 300px;
-    /*padding: 10px;*/
+    width: 300px;
+    height: 300px;
+    overflow: hidden;
     margin: 20px;
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     font-family: 'Caveat', cursive;
     position: relative;
     padding-bottom: 30px;
-    /*transition: .5s transform;*/
     transition: 2s;
 }
 
-.elem.-completed { /*добавила 13/12*/
+.elem.-completed {
     background: #5cc9fb45;
     box-shadow: 5px 5px 7px rgba(33,33,33,.3);
 }
@@ -56,18 +36,6 @@ input[type='button'] {
     transform: translate(-2000px, -1000px);
     width: 0;
     margin: 0;
-}
-
-.elem:nth-child(2n) {
-    /*transform: rotate(3deg);*/
-}
-
-.elem:nth-child(3n) {
-    /*transform: rotate(-5deg);*/
-}
-
-.elem:hover {
-   /* transform: scale(1.1); *//* ?? */
 }
 
 .head {
@@ -86,7 +54,7 @@ input[type='button'] {
 }
 
 .red {
-    background-color: #fa6b98c7; /* #fa6b98; #fa6b98c7 */
+    background-color: #fa6b98c7;
 }
 
 .orange {
@@ -94,18 +62,25 @@ input[type='button'] {
 }
 
 .green {
-    background-color: #1cc90696; /* #1cc906; #1ffa6f  #1cc90696 */
+    background-color: #1cc90696;
 }
 
 .tasks-wrapper {
     display: flex;
-  /*  justify-content: space-between;*/
     flex-wrap: wrap;
     padding: 30px;
 }
 
-body, textarea, input, legend {
+body, textarea, input, legend, .about {
     font-family: 'Caveat', cursive;
+}
+
+.about {
+    max-width: 1100px;
+    padding: 20px;
+    margin: 0 auto;
+    font-size: 24px;
+    color: #414342;
 }
 
 textarea {
@@ -117,7 +92,6 @@ textarea, input[type=text] {
     background: #ffffff;
     box-shadow: 0 5px 15px rgba(0,0,0,.07);
     font-size: 26px;
-
 }
 
 textarea:focus, input[type=text]:focus {
@@ -143,12 +117,6 @@ textarea:focus, input[type=text]:focus {
 .done::after {
     content: "\f274";
     font-weight: 400;
-  /*  font-family: "Font Awesome 5 Free";*/
-   /* font-weight: 900;*/
-  /*  font-size: 26px;*/
-    /*position: absolute;
-    top: 0;
-    right: 0;*/
 }
 
 .exit::after {
@@ -220,21 +188,16 @@ textarea:focus, input[type=text]:focus {
 }
 
 .add-btn {
-   /* position: absolute;
-    top: 20px;
-    right: 15px;*/
     text-transform: uppercase;
 }
 
 fieldset {
     border: 2px solid #5cc9fb;
-    /*width: 60%;
-    margin: 0 auto;
-    box-shadow: 0 10px 35px rgba(0,0,0,.2);*/
     color: #616060;
     width: 260px;
     font-size: 20px;
     display: inline-block;
+    margin-left: 5px;
 }
 
 fieldset .importance {
@@ -246,13 +209,11 @@ fieldset .importance li {
     height: 32px;
 }
 
-
 [role='dialog'].MuiPaper-root {
     border: 3px solid #5cc9fb;
     width: 500px;
     font-family: 'Caveat', cursive;
     font-size: 22px;
-
 }
 
 [role='dialog'] label {
@@ -263,7 +224,7 @@ fieldset .importance li {
 
 [role='dialog'] .completed-task label {
     width: auto;
-    margin-left: 0;  /* может убрать в label вообще? */
+    margin-left: 0;
 }
 
 .completed-task .title {
@@ -279,7 +240,6 @@ fieldset .importance li {
 [role='dialog'] .MuiDialogTitle-root {
     background: #5cc9fb96;
     font-family: 'Caveat', cursive !important;
-    /*border-bottom: 3px solid #5cc9fb;*/
     font-size: 24px;
 }
 
@@ -290,7 +250,6 @@ input[type=button] {
     padding: 8px 25px;
     border-radius: 4px;
     font-size: 20px;
-   /* box-shadow: 0 5px 15px rgba(0,0,0,.07); */
 }
 
 .MuiDialogActions-root {
@@ -312,8 +271,4 @@ input[type=button] {
 .MuiFormControl-root fieldset {
     border: none;
     box-shadow: none;
-}
-
-header {
-    font-family: 'Caveat', cursive; /**/
 }

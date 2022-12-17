@@ -1,6 +1,5 @@
 import {EventEmitter} from 'events';
 
-let clientEvents=new EventEmitter();
+let taskEvents=new EventEmitter();
 
-
-export {clientEvents};
+export {taskEvents};

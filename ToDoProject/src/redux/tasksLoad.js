@@ -1,6 +1,6 @@
-import { updateLoadState, updateData } from "./clientsSlice.js";
+import { updateLoadState, updateData } from "./tasksSlice.js";
 
-export async function clientsLoad(dispatch) {
+export async function tasksLoad(dispatch) {
     try {
       dispatch( updateLoadState({state:1,error:null}) );
       const stringName = 'LINNIK_TO_DO_2';

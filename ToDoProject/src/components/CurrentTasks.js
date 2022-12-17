@@ -1,11 +1,11 @@
 ﻿import React, { useState, useEffect, useMemo } from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
-import {clientEvents} from './events';
-import { MobileClient } from './MobileClient';
-
-import { clientsLoad } from "../redux/clientsLoad.js";
-import {updateData, updateLoadState} from "../redux/clientsSlice";
+import {taskEvents} from './events';
+import { Task } from './Task';
+import './CurrentTasks.css';
+import { tasksLoad } from "../redux/tasksLoad.js";
+import {updateData, updateLoadState} from "../redux/tasksSlice";
 import Dialog from '@mui/material/Dialog';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
@@ -16,17 +16,17 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
+import {useParams, useSearchParams, useNavigate} from "react-router-dom";
 
-
-export const MobileCompany = () => {
-    console.log("render MobileCompany");
-    const clientsRedux = useSelector(state=>state.clients);
+export const CurrentTasks = () => {
+    //console.log("render CurrentTasks");
+    const tasksRedux = useSelector(state=>state.tasks);
     const [isShowBlocked, setIsShowBlocked] = useState(false);
     const [isShowActive, setIsShowActive] = useState(false);
-    const [isClientChanging, setIsClientChanging] = useState(false);
-    const [clientChangingId, setClientChangingId] = useState(false);
-    const [isNewClientAdding, setIsNewClientAdding] = useState(false);
-    const [changingClient, setChangingClient] = useState({});
+    const [isTaskChanging, setIsTaskChanging] = useState(false);
+    const [taskChangingId, setTaskChangingId] = useState(false);
+    const [isNewTaskAdding, setIsNewTaskAdding] = useState(false);
+    const [changingTask, setChangingTask] = useState({});
     const [priority, setPriority] = useState(4);
     const [itemColor, setItemColor] = useState('green');
     const [open, setOpen] = useState(false);
@@ -36,28 +36,38 @@ export const MobileCompany = () => {
     const [confirmDeletedTaskId, setConfirmDeletedTaskId] = useState(null);
     const [isTaskDone, setIsTaskDone] = useState(false);
     const [doneTask, setDoneTask] = useState({});
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [isSortByDate, setIsSortByDate] = useState(false);
+    const [isSortByPriority, setIsSortByPriority] = useState(false);
     const [sortPriority, setSortPriority] = useState(null);
     const [searchValue, setSearchValue] = useState('');
     const [isSearch, setIsSearch] = useState(false);
     const [isExpired, setIsExpired] = useState(false);
-    const [isSortByDate, setIsSortByDate] = useState(false);
-    const [isSortByPriority, setIsSortByPriority] = useState(false);
+    const [tasksCurrent, setTasksCurrent] = useState(tasksRedux.dataCurrent);
+    const [tasksCompleted, setTasksCompleted] = useState(tasksRedux.dataCompleted);
 
-    const [clientsCurrent, setClientsCurrent] = useState(clientsRedux.clientsCurrent);
-    const [clientsCompleted, setClientsCompleted] = useState(clientsRedux.clientsCompleted);
+    let params = new URLSearchParams(searchParams);
+    let navigate = useNavigate();
 
     useEffect(
         ()=>{
-            if (clientsRedux.dataLoadState == 0) {
+            if (tasksRedux.dataLoadState == 0) {
                 load();
             }
-            if (clientsCurrent != clientsRedux.dataCurrent) {
-                setClientsCurrent(clientsRedux.dataCurrent);
-                setClientsCompleted(clientsRedux.dataCompleted);
+            if (tasksCurrent != tasksRedux.dataCurrent) {
+                setTasksCurrent(tasksRedux.dataCurrent);
+                setTasksCompleted(tasksRedux.dataCompleted);
             }
 
-            if (isSearch || isExpired || isSortByDate || isSortByPriority) {
-                let tasksFilteredT = clientsRedux.dataCurrent,
+            setIsSortByDate(searchParams.get('date') ? true : false);
+            setIsSortByPriority(searchParams.get('priority') ? true : false);
+            setSortPriority(searchParams.get('priority') ? searchParams.get('priority') : null);
+            setSearchValue(searchParams.get('search') ? searchParams.get('search') : '');
+            setIsSearch( searchParams.get('search') ? true : false);
+            setIsExpired(searchParams.get('expired') ? true : false);
+
+            if (tasksRedux.dataCurrent) {
+                let tasksFilteredT = tasksRedux.dataCurrent,
                     tasksFiltered = tasksFilteredT.slice(),
                     dateNow = new Date(),
                     dateTime = dateNow.getTime();
@@ -80,36 +90,32 @@ export const MobileCompany = () => {
                     tasksFiltered = tasksFiltered.filter(task => task.priority == sortPriority);
                 }
 
-                setClientsCurrent(tasksFiltered);
+                setTasksCurrent(tasksFiltered);
             }
-            clientEvents.addListener('EClientChanged', changeClient);
-            clientEvents.addListener('EClientDeleted', confirmTaskRemoval);
-            clientEvents.addListener('ETaskCompleted', moveTaskToDone);
+            taskEvents.addListener('ETaskChanged', changeTask);
+            taskEvents.addListener('ETaskDeleted', confirmTaskRemoval);
+            taskEvents.addListener('ETaskCompleted', moveTaskToDone);
             return ()=>{
-                // console.log('MobileCompany размонтирован');
-                clientEvents.removeListener('EClientChanged', changeClient);
-                clientEvents.removeListener('EClientDeleted', confirmTaskRemoval);
-                clientEvents.removeListener('ETaskCompleted', moveTaskToDone);
+                taskEvents.removeListener('ETaskChanged', changeTask);
+                taskEvents.removeListener('ETaskDeleted', confirmTaskRemoval);
+                taskEvents.removeListener('ETaskCompleted', moveTaskToDone);
             };
         },
-        [clientsRedux, isSearch, isExpired, isSortByDate, isSortByPriority, searchValue, sortPriority]
+        [tasksRedux, isSearch, isExpired, isSortByDate, isSortByPriority, searchValue, sortPriority, searchParams]
     );
 
     const dispatch = useDispatch();
-    let clientsCode = [];
-    if (clientsCurrent) {
-        clientsCode = clientsCurrent.map( (client, i) => {
-            client = {...client};
-            /*if ((sortPriority && sortPriority == client.priority) || !sortPriority
-            || (isSearch && client.task.indexOf(searchValue) != -1)) */
-            return <MobileClient key={client.id} id={client.id} client={client} isCompleted={false} markedClass={(confirmDeletedTaskId && confirmDeletedTaskId == client.id) ? '-marked' : ''} />;
+    let tasksCode = [];
 
+    if (tasksCurrent) {
+        tasksCode = tasksCurrent.map( (task, i) => {
+            task = {...task};
+            return <Task key={task.id} id={task.id} task={task} isCompleted={false} markedClass={(confirmDeletedTaskId && confirmDeletedTaskId == task.id) ? '-marked' : ''} />;
         });
     }
     const newTaskRef = React.createRef();
     const newNotesRef = React.createRef();
     const notesCompletedRef = React.createRef();
-
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -119,31 +125,30 @@ export const MobileCompany = () => {
         setOpen(false);
         setIsTaskDone(false);
         setIsConfirmation(false);
-        setIsClientChanging(false);
-        setIsNewClientAdding(false);
+        setIsTaskChanging(false);
+        setIsNewTaskAdding(false);
     };
 
     function load () {
-        dispatch(clientsLoad);
+        dispatch(tasksLoad);
     }
 
-    function addClient () {
-        setIsNewClientAdding(true);
+    function addTask () {
+        setIsNewTaskAdding(true);
         handleClickOpen();
     };
 
-
-    function moveTaskToDone (client) {
-        let clientNew = {...client}; // нужна ли копия
+    function moveTaskToDone (task) {
+        let taskNew = {...task}; // нужна ли копия
         setIsTaskDone(true);
         let dateCompleted = new Date();
-        clientNew.dateCompleted = dateCompleted.getDate()+"/"+(dateCompleted.getMonth()+1)+"/"+dateCompleted.getFullYear();
-        setDoneTask(clientNew);
+        taskNew.dateCompleted = dateCompleted.getDate()+"/"+(dateCompleted.getMonth()+1)+"/"+dateCompleted.getFullYear();
+        setDoneTask(taskNew);
         handleClickOpen();
 
     }
 
-    function saveClient () { /*{id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},*/
+    function saveTask () {
         let cc = {};
         let newTask=newTaskRef.current.value;
         cc.task = newTask;
@@ -152,36 +157,36 @@ export const MobileCompany = () => {
         let dateTerminationValue = value;
         let termination = new Date(dateTerminationValue);
         let terminationTime = termination.getTime();
-        cc.termination = terminationTime;
-        let dateTermination = termination.getDate()+"/"+(termination.getMonth()+1)+"/"+termination.getFullYear();
-        cc.dateTermination = dateTermination; // ?
+        cc.termination = (value) ? terminationTime : 9999999999999;
+        let dateTermination = (value) ? termination.getDate()+"/"+(termination.getMonth()+1)+"/"+termination.getFullYear() : '-';
+        cc.dateTermination = dateTermination;
         cc.priority = priority;
         cc.color = itemColor;
         cc.chosen = false;
-        let clientsNew = clientsCurrent.slice();
-        if (isNewClientAdding) {
+        let tasksNew = tasksRedux.dataCurrent.slice();
+        if (isNewTaskAdding) {
             let timeNow = new Date();
             cc.id = timeNow.getTime();
-            setIsNewClientAdding(false);
-            clientsNew.push(cc);
-        } else if (isClientChanging) {  // как в slice/... удалить, заменить, добавить элемент
-            cc.id = clientChangingId;
-            let clientIndex;
-            for (let i=0; clientsNew.length; i++) {
-                if (clientsNew[i].id == clientChangingId) {
-                    clientIndex = i;
+            setIsNewTaskAdding(false);
+            tasksNew.push(cc);
+        } else if (isTaskChanging) {
+            cc.id = taskChangingId;
+            let taskIndex;
+            for (let i=0; tasksNew.length; i++) {
+                if (tasksNew[i].id == taskChangingId) {
+                    taskIndex = i;
                     break;
                 }
             }
-            clientsNew[clientIndex] = cc;
-            setIsClientChanging(false);
-            setClientChangingId(null);
+            tasksNew[taskIndex] = cc;
+            setIsTaskChanging(false);
+            setTaskChangingId(null);
 
         }
         setValue(null);
         handleClose();
-        requestTaskUpdate(clientsNew, clientsCompleted);
-        setChangingClient({});
+        requestTaskUpdate(tasksNew, tasksCompleted);
+        setChangingTask({});
     };
 
     function saveDoneTask () {
@@ -191,7 +196,7 @@ export const MobileCompany = () => {
         delete completedTask.termination;
         delete completedTask.color;
         delete completedTask.priority;
-        let currentTasks = clientsCurrent.slice(), taskIndex;
+        let currentTasks = tasksCurrent.slice(), taskIndex;
         for (let i=0; currentTasks.length; i++) {
             if (currentTasks[i].id == completedTask.id) {
                 taskIndex = i;
@@ -200,35 +205,29 @@ export const MobileCompany = () => {
         }
         currentTasks.splice(taskIndex, 1);
 
-        let completedTasks = clientsCompleted.slice();
+        let completedTasks = tasksCompleted.slice();
         completedTasks.push(completedTask);
-
-
-
         handleClose();
         setDoneTask({});
         setIsTaskDone(false);
         requestTaskUpdate(currentTasks, completedTasks);
-
     };
 
-    function changeClient (client) {/* {id:101, task:"Task 1", notes:"Notes 1", dateTermination:"7/12/2022", termination:1670360400000, priority: 3, color: 'yellow', chosen: false},*/
-        setChangingClient(client); // нужен ли ChangingClient?? // нужен  надо проверить
-        let timestamp = client.termination;
+    function changeTask (task) {
+        setChangingTask(task);
+        let timestamp = task.termination;
         let newDate = new Date(timestamp);
         setValue(dayjs(newDate.getFullYear() + '-' + (newDate.getMonth()+1) + '-' + newDate.getDate()));
-        setPriority(client.priority);
-        setItemColor(client.color);
-        if (isClientChanging) {
-            newTaskRef.current.value = client.task;
-            newNotesRef.current.value = client.notes;
+        setPriority(task.priority);
+        setItemColor(task.color);
+        if (isTaskChanging) {
+            newTaskRef.current.value = task.task;
+            newNotesRef.current.value = task.notes;
         } else {
-            setIsClientChanging(true);
-            setClientChangingId(client.id);
+            setIsTaskChanging(true);
+            setTaskChangingId(task.id);
 
         }
-        //client. //могу ли я тут менять клиента. Это будут мутабельные изменения?
-
         handleClickOpen();
     };
 
@@ -241,34 +240,24 @@ export const MobileCompany = () => {
     function deleteTask () {
 
         handleClickOpen();
-        let clientsNew = clientsCurrent.slice(), clientIndex;
-        for (let i=0; clientsNew.length; i++) {
-            if (clientsNew[i].id == deletedTaskId) {
-                clientIndex = i;
+        let tasksNew = tasksCurrent.slice(), taskIndex;
+        for (let i=0; tasksNew.length; i++) {
+            if (tasksNew[i].id == deletedTaskId) {
+                taskIndex = i;
                 break;
             }
         }
-        clientsNew.splice(clientIndex, 1);
-
-
-
+        tasksNew.splice(taskIndex, 1);
         handleClose();
         setIsConfirmation(false);
         setConfirmDeletedTaskId(deletedTaskId);
         setTimeout(function () {
-            requestTaskUpdate(clientsNew, clientsCompleted);
+            requestTaskUpdate(tasksNew, tasksCompleted);
             setDeletedTaskId(null);
         }, 2000);
-      //
-
-        //setConfirmDeletedTaskId(null);
-      //
-
-
-
     };
 
-    async function requestTaskUpdate (clientsNew, completedTasks) {
+    async function requestTaskUpdate (tasksNew, completedTasks) {
         try {
             const stringName = 'LINNIK_TO_DO_2';
             const updatePassword = Math.random();
@@ -287,13 +276,13 @@ export const MobileCompany = () => {
                 sp1.append('f', 'UPDATE');
                 sp1.append('n', stringName);
                 sp1.append('p', updatePassword);
-                sp1.append('v', JSON.stringify({current: clientsNew, completed: completedTasks}))
+                sp1.append('v', JSON.stringify({current: tasksNew, completed: completedTasks}))
                 const response1=await fetch('https://fe.it-academy.by/AjaxStringStorage2.php', {
                     method : 'POST',
                     body: sp1
                 });
                 if ( response1.ok ) {
-                    dispatch(clientsLoad);
+                    dispatch(tasksLoad);
                 }
                 else {
                     dispatch( updateLoadState({state:3,error:"HTTP error "+response.status}) );
@@ -318,28 +307,46 @@ export const MobileCompany = () => {
     };
 
     function showByDate() {
-        setIsSortByDate(true);
-       // sortTasks();
+        setIsSortByDate(!isSortByDate);
+        !isSortByDate ? params.set('date', 1) : params.delete('date');
+        navigate('/current?' + params.toString());
     }
 
     function showExpired () {
-        setIsExpired(true);
-      //  sortTasks();
+        setIsExpired(!isExpired);
+        !isExpired ? params.set('expired', 1) : params.delete('expired');
+        navigate('/current?' + params.toString());
     };
 
     function searchText (eo) {
-        setSearchValue(eo.target.value);
-
-        setIsSearch(true);
-       // sortTasks();
-
+        let newValue = eo.target.value;
+        setSearchValue(newValue);
+        if (newValue != '') {
+            setIsSearch(true);
+            params.set('search', newValue);
+        } else {
+            setIsSearch(false);
+            if (params.has('search')) {
+                params.delete('search')
+            }
+        }
+        navigate('/current?' + params.toString());
     };
 
     function showByPriority (eo) {
         let priority = eo.target.getAttribute('data-priority');
-        setIsSortByPriority(true);
-        setSortPriority(priority);
-      //  sortTasks();
+        if (priority != sortPriority) {
+            setIsSortByPriority(true);
+            setSortPriority(priority);
+            params.set('priority', priority)
+        } else {
+            setIsSortByPriority(false);
+            setSortPriority(null);
+            params.delete('priority');
+        }
+
+        (priority == sortPriority) ? params.delete('priority') : params.set('priority', priority);
+        navigate('/current?' + params.toString());
     };
 
 
@@ -350,14 +357,13 @@ export const MobileCompany = () => {
         setIsSearch(false);
         setIsSortByPriority(false);
         setSortPriority(null);
+        setSearchParams({});
     };
 
     function sortTasks (eo) {
-        let tasksFiltered = clientsCurrent.slice(),
+        let tasksFiltered = tasksCurrent.slice(),
             dateNow = new Date(),
             dateTime = dateNow.getTime();
-
-
 
         if (isSearch) {
             tasksFiltered = tasksFiltered.filter(task => task.task.includes(searchValue) || task.notes.includes(searchValue));
@@ -375,17 +381,16 @@ export const MobileCompany = () => {
             tasksFiltered = tasksFiltered.filter(task => task.priority == sortPriority);
         }
 
-        setClientsCurrent(tasksFiltered);
-
+        setTasksCurrent(tasksFiltered);
     }
 
     return (
         <>
             {
-                (clientsCurrent) &&
-                <div className='MobileCompany'>
-                    <div>
-                        <input className={(!isShowActive && !isShowBlocked) ? 'active' : ''} type="button" value="Все"
+                (tasksCurrent) &&
+                <div className='CurrentTasks'>
+                    <div className="panel">
+                        <input className={(!isSortByDate && !isExpired && !isSearch && !isSortByPriority) ? 'active' : ''} type="button" value="Все"
                                onClick={showAll}/>
                         <input className={isSortByDate ? 'active' : ''} type="button" value="По сроку выполнения"
                                onClick={showByDate}/>
@@ -409,33 +414,29 @@ export const MobileCompany = () => {
                                     onClick={(eo) => showByPriority(eo)}></li>
                             </ul>
                         </fieldset>
-                        <input className="add-btn" type="button" value="Добавить задачу" onClick={addClient}/>
+                        <input className="add-btn" type="button" value="Добавить задачу" onClick={addTask}/>
                     </div>
-
-                    <div className='MobileCompanyClients'>
-                        <div className="tasks-wrapper">{clientsCode}</div>
-                    </div>
-
+                    <div className="tasks-wrapper">{tasksCode}</div>
                     {
-                        (isClientChanging || isNewClientAdding) &&
+                        (isTaskChanging || isNewTaskAdding) &&
                         <Dialog
                             open={open}
                             onClose={handleClose}>
 
                             <DialogTitle id="alert-dialog-title" onClose={handleClose}>
                                 <FontAwesomeIcon icon="fa-regular fa-xmark"/>
-                                {isNewClientAdding ? 'Новая задача' : 'Редактирование Задачи'}
+                                {isNewTaskAdding ? 'Новая задача' : 'Редактирование Задачи'}
                             </DialogTitle>
                             <DialogContent>
                                 <div>
                                     <div>
                                         <label>Задача:</label>
-                                        <textarea rows="3" cols="50" defaultValue={changingClient.task}
+                                        <textarea rows="3" cols="50" defaultValue={changingTask.task}
                                                   ref={newTaskRef}></textarea>
                                         <div>
                                         </div>
                                         <label htmlFor="notes-edit">Примечания:</label>
-                                        <textarea rows="2" cols="50" defaultValue={changingClient.notes}
+                                        <textarea rows="2" cols="50" defaultValue={changingTask.notes}
                                                   ref={newNotesRef}></textarea>
                                     </div>
                                     <ul className="importance"><label>Приоритетность:</label>
@@ -456,7 +457,7 @@ export const MobileCompany = () => {
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
 
-                                            defaultValue={changingClient.dateTermination}
+                                            defaultValue={changingTask.dateTermination}
                                             inputFormat="DD/MM/YYYY"
                                             value={value}
 
@@ -470,7 +471,7 @@ export const MobileCompany = () => {
 
                             </DialogContent>
                             <DialogActions>
-                                <input type="button" value="СОХРАНИТЬ" onClick={saveClient}/>
+                                <input type="button" value="СОХРАНИТЬ" onClick={saveTask}/>
                                 <input type="button" value="Отмена" onClick={handleClose}/>
                             </DialogActions>
 
@@ -523,12 +524,9 @@ export const MobileCompany = () => {
                 </div>
             }
             {
-                ((clientsRedux.dataLoadState == 0 || clientsRedux.dataLoadState == 1) && !clientsCurrent) &&
+                ((tasksRedux.dataLoadState == 0 || tasksRedux.dataLoadState == 1) && !tasksCurrent) &&
                 <div>Please wait a bit... Data is loading.</div>
             }
         </>
-
-
-
     );
 };
